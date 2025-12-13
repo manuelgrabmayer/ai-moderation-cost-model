@@ -1,2 +1,9 @@
 .zed/
+.vscode/
+.idea/
+
 .venv/
+src/__pycache__
+*.log
+
+.env
