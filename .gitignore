@@ -7,4 +7,5 @@
 *.log
 
 .env
-data/full/
+data/full/*
+cache/*

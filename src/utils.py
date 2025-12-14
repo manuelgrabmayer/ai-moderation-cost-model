@@ -1,5 +1,4 @@
-import csv
-
+import pandas as pd
 from dotenv import dotenv_values
 
 
@@ -20,16 +19,19 @@ def setup():
     return gemini_endpoint
 
 
-def readCSV(path, limit):
-    data = []
-    with open(path, mode="r") as file:
-        csvFile = csv.DictReader(file)
-        i = 0
-        for line in csvFile:
-            if i > limit:
-                break
+def readCSV(path):
+    df = pd.read_csv(path)
 
-            data.append(line["comment_text"])
-            i += 1
+    messages = df[["id", "comment_text"]]
+    targets = df[["id", "target"]]
 
-    return data
+    return messages, targets
+
+
+def readCache(path):
+    return pd.read_json(path)
+
+
+def analysis(results, targets):
+    res = pd.merge(results, targets, how="inner", on="id")
+    print(res)
