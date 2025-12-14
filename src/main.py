@@ -11,7 +11,8 @@ def main():
     except RuntimeError as e:
         print(e)
 
-    gemini.queryGemini(gemini_model, gemini_endpoint)
+    data = utils.readCSV("data/full/data-jigsaw.csv", 10)
+    gemini.queryGemini(gemini_model, gemini_endpoint, data)
 
 
 if __name__ == "__main__":

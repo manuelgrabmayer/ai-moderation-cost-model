@@ -1,4 +1,4 @@
-# import os
+import csv
 
 from dotenv import dotenv_values
 
@@ -18,3 +18,18 @@ def setup():
     print("Gemini endpoint FOUND")
 
     return gemini_endpoint
+
+
+def readCSV(path, limit):
+    data = []
+    with open(path, mode="r") as file:
+        csvFile = csv.DictReader(file)
+        i = 0
+        for line in csvFile:
+            if i > limit:
+                break
+
+            data.append(line["comment_text"])
+            i += 1
+
+    return data
