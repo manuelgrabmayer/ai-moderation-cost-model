@@ -1,7 +1,7 @@
 from google import genai
 
 
-def queryGemini(model, endpoint, data):
+def queryGemini(model, endpoint, data, cache_path):
     if model == "" or endpoint == "":
         raise RuntimeError("Invalid query parameters")
 
