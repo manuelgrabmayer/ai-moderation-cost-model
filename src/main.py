@@ -1,30 +1,31 @@
-import gemini
+import query
 import utils
 
 
 def main():
-    # Could be moved to a config file
-    gemini_endpoint = ""
-    gemini_model = "gemini-2.5-flash"
-    data_path = "data/test/data-jigsaw-10.csv"
-    result_cache_path = "cache/query_results.json"
+    availableTasks = ["score", "analyse", "test"]
+    envPath = ".env"
 
-    # Load API keys
+    task = utils.readArgs(availableTasks)
+    targetProvider, model, dataPath, cachePath = utils.readConfig("config.json")
+
+    # Executing task
     try:
-        gemini_endpoint = utils.setup()
-    except RuntimeError as e:
-        print(e)
-
-    # Reading data file and projections
-    data, targets = utils.readCSV(data_path)
-    # LLM query
-    # Might want to comment this line when doing analysis to save quota
-    gemini.queryGemini(gemini_model, gemini_endpoint, data.to_string(), result_cache_path)
-
-    # Reading .json cache and converting to pandas dataframe
-    results = utils.readCache(result_cache_path)
-    # Joining query results and targets and prining to stdout
-    utils.analysis(results,targets)
+        match task:
+            case "score":
+                endpoint = utils.resolveEndpoints(envPath, targetProvider)
+                data, targets = utils.readAndSeparateData(dataPath)
+                results = query.queryOpenAI(endpoint, data, 32)
+                utils.mergeAndCache(results, targets, cachePath)
+                print("Done")
+                utils.verifyCacheIntegrity(dataPath, cachePath)
+            case "analyse":
+                results = utils.readCache(cachePath)
+                print(results.head(10))
+            case "test":
+                print("Testing...")
+    except Exception as e:
+        print(f"Error occured - {e}")
 
 
 if __name__ == "__main__":

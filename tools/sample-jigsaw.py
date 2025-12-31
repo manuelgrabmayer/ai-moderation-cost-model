@@ -2,10 +2,10 @@
 
 import csv
 
-subset_size = 10
+subset_size = 500
 
 input_file_path = "data/full/data-jigsaw.csv"
-output_file_path = "data/test/data-jigsaw-10.csv"
+output_file_path = "data/test-big/data-jigsaw-500.csv"
 
 with (
     open(input_file_path, mode="r") as input_file,

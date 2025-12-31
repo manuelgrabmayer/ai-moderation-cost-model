@@ -1,37 +1,108 @@
+import json
+import sys
+
 import pandas as pd
 from dotenv import dotenv_values
 
 
-def helloworld():
-    print("Hello world!")
+def readConfig(path):
+    with open(path, "r") as f:
+        config = json.load(f)
+
+    return config["Provider"], config["Model"], config["Data"], config["Cache"]
 
 
-def setup():
-    # Loading environment variables
-    config = dotenv_values(".env")
+def readArgs(availableTasks):
+    args = sys.argv
 
-    gemini_endpoint = config.get("GEMINI_API_KEY")
-    if gemini_endpoint is None or gemini_endpoint == "":
-        raise RuntimeError("Gemini endpoint MISSING")
+    print(f"Available tasks: {availableTasks}")
 
-    print("Gemini endpoint FOUND")
+    if len(args) != 2:
+        print("Usage: python3 src/main.py <task>")
+        raise RuntimeError("No task specified!")
 
-    return gemini_endpoint
+    task = args[1].lower()
+    if task not in availableTasks:
+        raise RuntimeError("Invalid task!")
+
+    return task
 
 
-def readCSV(path):
+def resolveEndpoints(envPath, targetProvider):
+    # MAKE SURE NOT TO PRINT SECRETS
+    env = dotenv_values(envPath)
+    pattern = "_API_KEY"
+    endpointsDict = {
+        key.removesuffix(pattern): value
+        for key, value in env.items()
+        if key.endswith(pattern)
+    }
+    providers = list(endpointsDict.keys())
+
+    print("Available endpoints:")
+    if not providers:
+        raise RuntimeError("No provider endpoints configured")
+
+    print(providers)
+
+    if targetProvider not in providers:
+        raise RuntimeError(
+            f'Endpoint for provider is missing. In {envPath}: {targetProvider}{pattern}="<API_KEY>"'
+        )
+
+    return endpointsDict[targetProvider]
+
+
+def readAndSeparateData(path):
     df = pd.read_csv(path)
 
     messages = df[["id", "comment_text"]]
-    targets = df[["id", "target"]]
+    targets = df[["id", "comment_text", "target"]]
 
     return messages, targets
 
 
+def mergeAndCache(results, targets, cacheFile=None):
+    merged = pd.merge(targets, results, how="inner", on="id")
+    merged = merged.round(6)
+    if cacheFile:
+        merged.to_csv("cache/results.csv", index=False)
+    return merged
+
+
 def readCache(path):
-    return pd.read_json(path)
+    return pd.read_csv(path)
+
+
+def verifyCacheIntegrity(dataPath, cachePath):
+    data = pd.read_csv(dataPath)
+    cache = pd.read_csv(cachePath)
+
+    cacheLen = len(cache)
+    dataLen = len(data)
+
+    print(
+        f"Comparing original dataset (length = {dataLen}) to cache (length = {cacheLen})"
+    )
+
+    if cacheLen > dataLen:
+        raise RuntimeError("Original data cannot be shorter than cache!")
+
+    ids = data.head(cacheLen)["id"]
+    cacheIds = cache["id"]
+
+    if ids.equals(cacheIds):
+        if cacheLen == dataLen:
+            print("Cache and Original data match completely")
+        else:
+            print(f"Cache and Original data match up to cache length = {cacheLen}")
+        return True
+    else:
+        raise RuntimeError(
+            f"Cache does not match with original data up to cache length = {cacheLen}"
+        )
 
 
 def analysis(results, targets):
-    res = pd.merge(results, targets, how="inner", on="id")
+    res = pd.merge(targets, results, how="inner", on="id")
     print(res)
