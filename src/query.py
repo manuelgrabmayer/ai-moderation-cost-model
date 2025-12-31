@@ -7,24 +7,14 @@ from openai import (
     RateLimitError,
 )
 
+from fetch import safeFetch
 
-def formatOutput(output):
-    scores = output.category_scores.model_dump()
-    return max(scores.values())
-
-
-# Potential async method
-def queryBatch(client, input):
-    ids = input["id"]
-    messages = input["comment_text"]
-
-    # Actual query
-    results = executeQuery(client, messages.tolist())
-    scores = [formatOutput(r) for r in results]
-
-    ids = input["id"]
-    joined = pd.DataFrame({"id": ids.tolist(), "score": scores})
-    return joined
+RETRYABLE_ERRORS = (
+    RateLimitError,
+    APIConnectionError,
+    InternalServerError,
+    APITimeoutError,
+)
 
 
 def queryOpenAI(endpoint, input, batchSize, cacheFile=None):
@@ -49,12 +39,23 @@ def queryOpenAI(endpoint, input, batchSize, cacheFile=None):
     return joined
 
 
-RETRYABLE_ERRORS = (
-    RateLimitError,
-    APIConnectionError,
-    InternalServerError,
-    APITimeoutError,
-)
+def queryBatch(client, input):
+    ids = input["id"]
+    messages = input["comment_text"]
+
+    # Actual query
+    # results = executeQuery(client, messages.tolist())
+    results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
+    scores = [formatOutput(r) for r in results]
+
+    ids = input["id"]
+    joined = pd.DataFrame({"id": ids.tolist(), "score": scores})
+    return joined
+
+
+def formatOutput(output):
+    scores = output.category_scores.model_dump()
+    return max(scores.values())
 
 
 def executeQuery(client, input):
