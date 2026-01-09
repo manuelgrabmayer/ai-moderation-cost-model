@@ -31,12 +31,16 @@ def queryOpenAI(endpoint, input, batchSize, cacheFile=None):
     except RETRYABLE_ERRORS as e:
         print(f"Error {e} raised. {len(scored)} / {len(batches)} batches completed.")
 
-    joined = pd.concat(scored, axis=0)
+    full = pd.concat(scored, axis=0)
+    full.rename(
+        inplace=True,
+        columns=lambda column: "OPENAI_" + column if column != "id" else column,
+    )
 
     if cacheFile:
-        joined.to_csv("cache/results.csv", index=False, float_format="%.6f")
+        full.to_csv("cache/results.csv", index=False, float_format="%.6f")
 
-    return joined
+    return full
 
 
 def queryBatch(client, input):
@@ -44,18 +48,17 @@ def queryBatch(client, input):
     messages = input["comment_text"]
 
     # Actual query
-    # results = executeQuery(client, messages.tolist())
     results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
-    scores = [formatOutput(r) for r in results]
+    scores = pd.DataFrame([formatOutput(r) for r in results])
 
-    ids = input["id"]
-    joined = pd.DataFrame({"id": ids.tolist(), "score": scores})
-    return joined
+    concat = pd.concat([ids, scores], axis=1)
+    return concat
 
 
 def formatOutput(output):
     scores = output.category_scores.model_dump()
-    return max(scores.values())
+    # return max(scores.values())
+    return scores
 
 
 def executeQuery(client, input):

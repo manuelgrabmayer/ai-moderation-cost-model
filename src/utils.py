@@ -57,7 +57,26 @@ def readAndSeparateData(path):
     df = pd.read_csv(path)
 
     messages = df[["id", "comment_text"]]
-    targets = df[["id", "comment_text", "target"]]
+
+    targets = df[
+        [
+            "id",
+            "comment_text",
+            "target",
+            "severe_toxicity",
+            "obscene",
+            "identity_attack",
+            "insult",
+            "threat",
+        ]
+    ].copy()
+
+    targets.rename(
+        inplace=True,
+        columns=lambda column: "JIGSAW_" + column
+        if (column != "id") and (column != "comment_text")
+        else column,
+    )
 
     return messages, targets
 

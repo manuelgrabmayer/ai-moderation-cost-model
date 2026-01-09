@@ -16,6 +16,7 @@ def main():
             case "score":
                 endpoint = utils.resolveEndpoints(envPath, targetProvider)
                 data, targets = utils.readAndSeparateData(dataPath)
+                # 32 is the optimal batch size for OpenAI endpoint
                 results = query.queryOpenAI(endpoint, data, 32)
                 utils.mergeAndCache(results, targets, cachePath)
                 utils.verifyCacheIntegrity(dataPath, cachePath)
