@@ -1,6 +1,6 @@
 {
     "Provider": "OPENAI",
     "Model": "omni-moderation-latest",
-    "Data": "data/test/data-jigsaw-10.csv",
+    "Data": "data/test-big/data-jigsaw-10000.csv",
     "Cache": "cache/results.csv"
 }

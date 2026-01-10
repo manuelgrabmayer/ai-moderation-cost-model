@@ -23,13 +23,16 @@ def queryOpenAI(endpoint, input, batchSize):
     batches = [input.iloc[i : i + batchSize] for i in range(0, len(input), batchSize)]
 
     scored = []
-
+    totalBatches = len(batches)
+    batchNum = 1
     try:
         for batch in batches:
+            print(f"Scoring batch ({batchNum}/{totalBatches})")
             result = queryBatch(client, batch)
             scored.append(result)
+            batchNum += 1
     except RETRYABLE_ERRORS as e:
-        print(f"Error {e} raised. {len(scored)} / {len(batches)} batches completed.")
+        print(f"Error {e} raised. {len(scored)} / {totalBatches} batches completed.")
 
     full = pd.concat(scored, axis=0)
     full.rename(

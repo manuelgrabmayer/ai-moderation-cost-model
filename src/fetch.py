@@ -17,7 +17,7 @@ def getRetryWrapper(RETRYABLE_ERRORS):
         stop=stop_after_attempt(20),
         wait=wait_random_exponential(multiplier=4, min=4, max=600),
         retry=retry_if_exception_type(RETRYABLE_ERRORS),
-        before_sleep=before_sleep_log(logger, logging.WARNING),
+        # before_sleep=before_sleep_log(logger, logging.WARNING),
         reraise=True,
     )
 

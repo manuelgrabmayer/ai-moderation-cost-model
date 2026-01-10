@@ -9,7 +9,7 @@ def main():
     # Config and api keys
     task = utils.readArgs(availableTasks)
     targetProvider, model, dataPath, cachePath = utils.readConfig("config.json")
-    rowLimit = 5
+    rowLimit = 1000
     continueFromCache = True
     # Executing task
     try:
