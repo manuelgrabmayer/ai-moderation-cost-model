@@ -81,16 +81,71 @@ def readAndSeparateData(path):
     return messages, targets
 
 
-def mergeAndCache(results, targets, cacheFile=None):
+def mergeAndCache(results, targets, cache=None, cacheFile=None):
     merged = pd.merge(targets, results, how="inner", on="id")
+    if cache is not None:
+        merged = pd.concat([cache, merged], axis=0)
     merged = merged.round(6)
-    if cacheFile:
-        merged.to_csv("cache/results.csv", index=False)
+    if cacheFile is not None:
+        merged.to_csv(cacheFile, index=False)
     return merged
 
 
 def readCache(path):
     return pd.read_csv(path)
+
+
+def fetchData(dataPath, rowLimit, cachePath=None):
+    data = pd.read_csv(dataPath)
+    cache = None
+
+    startIdx = 0
+    if cachePath is not None:
+        try:
+            cache = pd.read_csv(cachePath)
+            cacheLen = len(cache)
+        except FileNotFoundError as e:
+            print("Cache file does not exist. Starting from beginning")
+            cacheLen = 0
+
+        if cacheLen < len(data):
+            print(f"Continuing scoring from cache (startIndex = {cacheLen})")
+            startIdx = cacheLen
+        else:
+            print("Data has already been fully scored.")
+            return None, None
+    else:
+        print("Starting scoring from beginning (startIndex = 0)")
+
+    data = data[startIdx : startIdx + rowLimit]
+
+    return data, cache
+
+
+def separateData(data):
+    messages = data[["id", "comment_text"]]
+
+    targets = data[
+        [
+            "id",
+            "comment_text",
+            "target",
+            "severe_toxicity",
+            "obscene",
+            "identity_attack",
+            "insult",
+            "threat",
+        ]
+    ].copy()
+
+    targets.rename(
+        inplace=True,
+        columns=lambda column: "JIGSAW_" + column
+        if (column != "id") and (column != "comment_text")
+        else column,
+    )
+
+    return messages, targets
 
 
 def verifyCacheIntegrity(dataPath, cachePath):

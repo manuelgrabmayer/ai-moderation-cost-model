@@ -9,21 +9,38 @@ def main():
     # Config and api keys
     task = utils.readArgs(availableTasks)
     targetProvider, model, dataPath, cachePath = utils.readConfig("config.json")
-
+    rowLimit = 5
+    continueFromCache = True
     # Executing task
     try:
         match task:
             case "score":
+                # Endpoints
                 endpoint = utils.resolveEndpoints(envPath, targetProvider)
-                data, targets = utils.readAndSeparateData(dataPath)
+
+                # Fetch data
+                if continueFromCache:
+                    data, cache = utils.fetchData(dataPath, rowLimit, cachePath)
+                else:
+                    data, cache = utils.fetchData(dataPath, rowLimit)
+
+                # Already scored?
+                if data is None:
+                    return
+
+                messages, targets = utils.separateData(data)
+
+                # Query
                 # 32 is the optimal batch size for OpenAI endpoint
-                results = query.queryOpenAI(endpoint, data, 32)
-                utils.mergeAndCache(results, targets, cachePath)
+                scoredMessages = query.queryOpenAI(endpoint, messages, 32)
+
+                # Caching and validation
+                utils.mergeAndCache(scoredMessages, targets, cache, cachePath)
                 utils.verifyCacheIntegrity(dataPath, cachePath)
             case "analyse":
                 # More complex analysis functionality still needs to be done...
-                results = utils.readCache(cachePath)
-                print(results.head(10))
+                scoredMessages = utils.readCache(cachePath)
+                print(scoredMessages.head(10))
             case "test":
                 print("Testing...")
     except Exception as e:

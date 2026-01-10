@@ -17,7 +17,7 @@ RETRYABLE_ERRORS = (
 )
 
 
-def queryOpenAI(endpoint, input, batchSize, cacheFile=None):
+def queryOpenAI(endpoint, input, batchSize):
     client = OpenAI(api_key=endpoint)
 
     batches = [input.iloc[i : i + batchSize] for i in range(0, len(input), batchSize)]
@@ -36,9 +36,6 @@ def queryOpenAI(endpoint, input, batchSize, cacheFile=None):
         inplace=True,
         columns=lambda column: "OPENAI_" + column if column != "id" else column,
     )
-
-    if cacheFile:
-        full.to_csv("cache/results.csv", index=False, float_format="%.6f")
 
     return full
 
