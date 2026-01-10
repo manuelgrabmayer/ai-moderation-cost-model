@@ -170,11 +170,20 @@ def verifyCacheIntegrity(dataPath, cachePath):
             print("Cache and Original data match completely")
         else:
             print(f"Cache and Original data match up to cache length = {cacheLen}")
-        return True
     else:
         raise RuntimeError(
             f"Cache does not match with original data up to cache length = {cacheLen}"
         )
+
+    print("Verifying that no entries are missing from cache columns")
+
+    failures = [column for column in cache.columns if cache[column].count() != cacheLen]
+    if not failures:
+        print("No values are missing from cache columns")
+    else:
+        raise RuntimeError(f"Values missing from cache columns ({failures})")
+
+    return True
 
 
 def analysis(results, targets):

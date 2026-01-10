@@ -1,3 +1,4 @@
+import analyse
 import query
 import utils
 
@@ -9,8 +10,8 @@ def main():
     # Config and api keys
     task = utils.readArgs(availableTasks)
     targetProvider, model, dataPath, cachePath = utils.readConfig("config.json")
-    rowLimit = 1000
-    continueFromCache = True
+    rowLimit = 500
+    continueFromCache = False
     # Executing task
     try:
         match task:
@@ -32,7 +33,7 @@ def main():
 
                 # Query
                 # 32 is the optimal batch size for OpenAI endpoint
-                scoredMessages = query.queryOpenAI(endpoint, messages, 32)
+                scoredMessages = query.queryOpenAI(endpoint, messages, 5)
 
                 # Caching and validation
                 utils.mergeAndCache(scoredMessages, targets, cache, cachePath)
@@ -40,9 +41,10 @@ def main():
             case "analyse":
                 # More complex analysis functionality still needs to be done...
                 scoredMessages = utils.readCache(cachePath)
-                print(scoredMessages.head(10))
+                analyse.visualise(scoredMessages)
             case "test":
                 print("Testing...")
+                utils.verifyCacheIntegrity(dataPath, cachePath)
     except Exception as e:
         print(f"Error occured - {e}")
 

@@ -7,7 +7,7 @@ from openai import (
     RateLimitError,
 )
 
-from fetch import safeFetch
+# from fetch import safeFetch
 
 RETRYABLE_ERRORS = (
     RateLimitError,
@@ -48,10 +48,12 @@ def queryBatch(client, input):
     messages = input["comment_text"]
 
     # Actual query
-    results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
+    # results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
+    results = executeQuery(client, messages.tolist())
     scores = pd.DataFrame([formatOutput(r) for r in results])
-
-    concat = pd.concat([ids, scores], axis=1)
+    concat = pd.concat(
+        [ids.reset_index(drop=True), scores.reset_index(drop=True)], axis=1
+    )
     return concat
 
 
@@ -62,6 +64,28 @@ def formatOutput(output):
 
 
 def executeQuery(client, input):
-    return client.moderations.create(
+    response = client.moderations.create(model="omni-moderation-latest", input=input)
+
+    return response.results
+
+
+def executeQuery2(client, input):
+    # Call with raw response to ensure headers are captured
+    raw = client.moderations.with_raw_response.create(
         model="omni-moderation-latest", input=input
-    ).results
+    )
+
+    # 1. Use the .http_response object directly (this is the most reliable way)
+    headers = raw.http_response.headers
+
+    # 2. Extract specific headers
+    limit_requests = headers.get("x-ratelimit-limit-requests")
+    limit_tokens = headers.get("x-ratelimit-limit-tokens")
+    remaining_req = headers.get("x-ratelimit-remaining-requests")
+
+    print(f"Request Limit: {limit_requests}")
+    print(f"Token Limit: {limit_tokens}")
+    print(f"Remaining: {remaining_req}")
+
+    # Return the parsed data
+    return raw.parse().results
