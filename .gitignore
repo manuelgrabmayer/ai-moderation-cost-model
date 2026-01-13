@@ -9,4 +9,5 @@
 .env
 data/full/*
 data/test-big/*
+data/random-sample/*
 cache/*

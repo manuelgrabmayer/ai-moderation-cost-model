@@ -1,5 +1,4 @@
 # The point of this tool is to cache a subset of the full jigsaw dataset.
-
 import csv
 
 subset_size = 10000

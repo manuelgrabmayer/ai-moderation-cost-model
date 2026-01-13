@@ -7,7 +7,7 @@ from openai import (
     RateLimitError,
 )
 
-# from fetch import safeFetch
+from fetch import safeFetch
 
 RETRYABLE_ERRORS = (
     RateLimitError,
@@ -48,8 +48,8 @@ def queryBatch(client, input):
     messages = input["comment_text"]
 
     # Actual query
-    # results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
-    results = executeQuery(client, messages.tolist())
+    results = safeFetch(executeQuery, RETRYABLE_ERRORS, client, messages.tolist())
+    # results = executeQuery(client, messages.tolist())
     scores = pd.DataFrame([formatOutput(r) for r in results])
     concat = pd.concat(
         [ids.reset_index(drop=True), scores.reset_index(drop=True)], axis=1

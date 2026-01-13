@@ -4,3 +4,6 @@ pandas
 openai
 tenacity
 matplotlib
+seaborn
+scikit-learn
+numpy
