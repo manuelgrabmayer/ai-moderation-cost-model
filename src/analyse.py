@@ -21,6 +21,7 @@ def visualise(results):
 
     print(f"FPR Polynomial: {poly_fpr}")
     print(f"FPR Polynomial: {poly_fnr}")
+    print("x = 0 - 1 moderation threshold")
 
     data_lines = [
         axis.plot(thresholds, fpr, lw=2, color='red', label='False Positive Rate (FPR)')[0],
@@ -28,6 +29,9 @@ def visualise(results):
         axis.plot(thresholds, poly_fpr_points, lw=2, color='maroon', label='FPR Polynomial')[0],
         axis.plot(thresholds, poly_fnr_points, lw=2, color='navy', label='FNR Polynomial')[0],
     ]
+
+    axis.set_xlabel("Moderation Threshold")
+    axis.set_ylabel("Error Rate")
 
     legend = axis.legend(loc='upper center', fancybox=True, shadow=True)
 
@@ -62,7 +66,7 @@ def threshold(target,model,thresholdCount):
     results = []
 
     for t in thresholds:
-        target_above = target >= t
+        target_above = target >= 0.5
         model_above = model >= t
 
         tp = np.sum(target_above & model_above)

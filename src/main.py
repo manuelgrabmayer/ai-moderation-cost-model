@@ -43,8 +43,8 @@ def main():
                 data = utils.readCache(cachePath)
                 scoreColumns = [column for column in data.columns if "OPENAI_" in column]
 
-                model_scores = data[scoreColumns].max(axis=1)
-                target_scores = data["JIGSAW_target"]
+                model_scores = data["OPENAI_hate/threatening"]#data[scoreColumns].max(axis=1)
+                target_scores = data["JIGSAW_threat"]#data["JIGSAW_target"]
 
                 thresholdCount = 100
                 results = analyse.threshold(target_scores,model_scores,thresholdCount)
