@@ -1,0 +1,13 @@
+.zed/
+.vscode/
+.idea/
+
+.venv/
+*/__pycache__
+*.log
+
+.env
+data/full/*
+data/test-big/*
+data/random-sample/*
+cache/*

@@ -1,0 +1,6 @@
+{
+    "Provider": "OPENAI",
+    "Model": "omni-moderation-latest",
+    "Data": "data/random-sample/data-jigsaw-random-100k.csv",
+    "Cache": "cache/results-random-100k.csv"
+}
