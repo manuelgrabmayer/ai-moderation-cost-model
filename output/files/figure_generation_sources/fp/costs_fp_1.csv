@@ -1,0 +1,10 @@
+app,name,human_review_cost
+Facebook,Bullying,0.14288298159534543
+Facebook,Hateful,0.08531201131052168
+Facebook,Violence,0.14885830876721276
+Instagram,Bullying,0.0678743910144982
+Instagram,Hateful,0.018696849210016405
+Instagram,Violence,0.0660435654747994
+Human,Bullying,0.1675
+Human,Hateful,0.1675
+Human,Violence,0.1675
